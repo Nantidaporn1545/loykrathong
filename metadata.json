@@ -1,0 +1,6 @@
+{
+  "name": "ลอยกระทงออนไลน์ V45",
+  "description": "กิจกรรมลอยกระทงออนไลน์ V45 ร่วมสืบสานประเพณีไทย ตกแต่งกระทง เขียนคำอธิษฐาน และลอยกระทงในบรรยากาศแม่น้ำยามค่ำคืนเสมือนจริง",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

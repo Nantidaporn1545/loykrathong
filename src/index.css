@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .font-charm {
+    font-family: 'Charm', cursive, 'Sarabun', sans-serif;
+  }
+  .font-chakra {
+    font-family: 'Chakra Petch', sans-serif;
+  }
+  .font-sarabun {
+    font-family: 'Sarabun', sans-serif;
+  }
+}
+
+@keyframes candleFlicker {
+  0%, 100% {
+    transform: scale(1) rotate(-1deg);
+    opacity: 0.95;
+    filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.9)) drop-shadow(0 0 28px rgba(245, 158, 11, 0.7));
+  }
+  25% {
+    transform: scale(1.08, 0.95) rotate(1deg);
+    opacity: 0.85;
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.7)) drop-shadow(0 0 20px rgba(245, 158, 11, 0.5));
+  }
+  50% {
+    transform: scale(0.95, 1.05) rotate(-2deg);
+    opacity: 1;
+    filter: drop-shadow(0 0 16px rgba(251, 191, 36, 1)) drop-shadow(0 0 35px rgba(245, 158, 11, 0.8));
+  }
+  75% {
+    transform: scale(1.04, 0.98) rotate(1.5deg);
+    opacity: 0.9;
+    filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.8)) drop-shadow(0 0 24px rgba(245, 158, 11, 0.6));
+  }
+}
+
+@keyframes smokeFloat {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-12px) translateX(3px) scale(1.4);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-28px) translateX(-4px) scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes waterRipple {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1.5deg);
+  }
+}
+
+@keyframes moonGlow {
+  0%, 100% {
+    box-shadow: 0 0 60px 20px rgba(254, 243, 199, 0.35), 0 0 120px 40px rgba(245, 158, 11, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 80px 30px rgba(254, 243, 199, 0.45), 0 0 150px 60px rgba(245, 158, 11, 0.3);
+  }
+}
+
+.animate-candle-flicker {
+  animation: candleFlicker 1.8s infinite ease-in-out;
+}
+
+.animate-smoke {
+  animation: smokeFloat 2.5s infinite linear;
+}
+
+.animate-water-ripple {
+  animation: waterRipple 3s infinite ease-out;
+}
+
+.animate-float-gentle {
+  animation: floatGentle 4s infinite ease-in-out;
+}
+
+.animate-moon-glow {
+  animation: moonGlow 6s infinite ease-in-out;
+}
+
+/* Glassmorphism styles */
+.glass-panel {
+  background: rgba(13, 22, 45, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-panel-gold {
+  background: linear-gradient(135deg, rgba(20, 30, 55, 0.85) 0%, rgba(10, 17, 38, 0.92) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(245, 158, 11, 0.15);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #FFFBEB 0%, #FCD34D 40%, #F59E0B 70%, #D97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-border-glow {
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.3), inset 0 0 10px rgba(251, 191, 36, 0.2);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #080d1e;
+}
+::-webkit-scrollbar-thumb {
+  background: #233554;
+  border-radius: 4px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a5078;
+}
