@@ -29,8 +29,10 @@ export default function App() {
   const [showGalleryModal, setShowGalleryModal] = useState(false);
   const [showMusicModal, setShowMusicModal] = useState(false);
 
-  // Subscribe to real-time central Firestore database for all employees
+  // Subscribe to real-time central Firestore database for all employees & auto-play music on load
   useEffect(() => {
+    musicSynth.autoStartOnLoad();
+
     const unsubscribeFirestore = subscribeToKrathongs((realtimeList) => {
       setKrathongs(realtimeList);
       setCounter(realtimeList.length);

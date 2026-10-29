@@ -10,6 +10,7 @@ class AudioManager {
   private isPlaying: boolean = false;
   private volume: number = 0.6;
   private listeners: Set<() => void> = new Set();
+  private interactionListenersAttached: boolean = false;
 
   constructor() {
     // Lazy-initialized HTMLAudioElement in browser
@@ -85,10 +86,43 @@ class AudioManager {
       .then(() => {
         this.isPlaying = true;
         this.notify();
+        this.removeFallbackListeners();
       })
       .catch((err) => {
-        console.warn('Audio playback interrupted or restricted:', err);
+        console.warn('Audio playback restricted by browser autoplay policy:', err);
+        this.setupFallbackListeners();
       });
+  }
+
+  public autoStartOnLoad() {
+    this.play();
+    this.setupFallbackListeners();
+  }
+
+  private handleFirstInteraction = () => {
+    if (!this.isPlaying) {
+      this.play();
+    }
+    this.removeFallbackListeners();
+  };
+
+  private setupFallbackListeners() {
+    if (this.interactionListenersAttached || typeof window === 'undefined' || this.isPlaying) return;
+    this.interactionListenersAttached = true;
+
+    const events = ['click', 'touchstart', 'pointerdown', 'keydown'];
+    events.forEach((evt) => {
+      window.addEventListener(evt, this.handleFirstInteraction, { capture: true, passive: true });
+    });
+  }
+
+  private removeFallbackListeners() {
+    if (typeof window === 'undefined') return;
+    const events = ['click', 'touchstart', 'pointerdown', 'keydown'];
+    events.forEach((evt) => {
+      window.removeEventListener(evt, this.handleFirstInteraction, { capture: true });
+    });
+    this.interactionListenersAttached = false;
   }
 
   public pause() {
