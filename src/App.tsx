@@ -23,7 +23,7 @@ export default function App() {
 
   const [krathongs, setKrathongs] = useState<KrathongData[]>(INITIAL_KRATHONGS);
   const [myKrathong, setMyKrathong] = useState<KrathongData | null>(null);
-  const [counter, setCounter] = useState(1428);
+  const [counter, setCounter] = useState(0);
 
   const [musicPlaying, setMusicPlaying] = useState(false);
   const [showGalleryModal, setShowGalleryModal] = useState(false);
@@ -33,7 +33,7 @@ export default function App() {
   useEffect(() => {
     const unsubscribeFirestore = subscribeToKrathongs((realtimeList) => {
       setKrathongs(realtimeList);
-      setCounter(1428 + realtimeList.length);
+      setCounter(realtimeList.length);
       
       // Keep myKrathong updated with latest likes if currently active
       if (myKrathong) {

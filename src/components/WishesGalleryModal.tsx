@@ -175,4 +175,3 @@ export const WishesGalleryModal: React.FC<WishesGalleryModalProps> = ({
     </div>
   );
 };
-

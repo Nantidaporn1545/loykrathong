@@ -25,7 +25,7 @@ export const RiverScene: React.FC<RiverSceneProps> = ({
   onOpenMusicModal,
   onOpenGallery,
   onOpenWishes,
-  totalCounter = 1428,
+  totalCounter = 0,
   interactive = true,
 }) => {
   const [selectedKrathong, setSelectedKrathong] = useState<KrathongData | null>(null);

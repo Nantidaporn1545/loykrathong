@@ -3,6 +3,7 @@ import {
   doc,
   setDoc,
   updateDoc,
+  deleteDoc,
   onSnapshot,
   increment,
   getDocs
@@ -36,9 +37,6 @@ export function subscribeToKrathongs(onUpdate: (krathongs: KrathongData[]) => vo
 
   const colRef = collection(db, COLLECTION_NAME);
 
-  // Seed initially if empty
-  seedInitialKrathongsIfEmpty().catch(() => {});
-
   const unsubscribe = onSnapshot(
     colRef,
     (snapshot) => {
@@ -54,11 +52,7 @@ export function subscribeToKrathongs(onUpdate: (krathongs: KrathongData[]) => vo
       // Sort by timestamp descending (newest first)
       items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-      if (items.length > 0) {
-        onUpdate(items);
-      } else {
-        onUpdate(INITIAL_KRATHONGS);
-      }
+      onUpdate(items);
     },
     (error) => {
       handleFirestoreError(error, OperationType.LIST, COLLECTION_NAME);
@@ -100,5 +94,30 @@ export async function incrementKrathongLikeInFirestore(krathongId: string): Prom
     });
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, `${COLLECTION_NAME}/${krathongId}`);
+  }
+}
+
+// Reset all Krathong data in Firestore back to initial fresh state
+export async function resetAllKrathongsInFirestore(): Promise<void> {
+  const colRef = collection(db, COLLECTION_NAME);
+  try {
+    const snapshot = await getDocs(colRef);
+    const deletePromises = snapshot.docs.map((docSnap) =>
+      deleteDoc(doc(db, COLLECTION_NAME, docSnap.id))
+    );
+    await Promise.all(deletePromises);
+
+    // Clear local storage keys
+    try {
+      localStorage.removeItem('v45_loy_krathong_data_v1');
+      localStorage.removeItem('v45_loy_krathong_counter_v1');
+    } catch {}
+
+    // Seed default sample krathongs
+    for (const item of INITIAL_KRATHONGS) {
+      await setDoc(doc(db, COLLECTION_NAME, item.id), item);
+    }
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, COLLECTION_NAME);
   }
 }
