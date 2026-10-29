@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidKrathong(data) {
+      return data.keys().hasAll(['nickname', 'style', 'color', 'decorations', 'wish', 'timestamp', 'xPercent', 'speed', 'likes'])
+        && data.keys().hasOnly(['nickname', 'department', 'style', 'color', 'decorations', 'wish', 'timestamp', 'xPercent', 'speed', 'likes'])
+        && data.nickname is string && data.nickname.size() > 0 && data.nickname.size() <= 100
+        && (!('department' in data) || (data.department is string && data.department.size() <= 100))
+        && data.style in ['traditional', 'lotus', 'golden_lotus', 'eco_coconut']
+        && data.color in ['gold', 'pink', 'blue', 'purple', 'emerald']
+        && data.decorations is map
+        && data.wish is string && data.wish.size() <= 1000
+        && data.timestamp is number
+        && data.xPercent is number
+        && data.speed is number
+        && data.likes is number && data.likes >= 0;
+    }
+
+    match /krathongs/{krathongId} {
+      allow read: if true;
+      allow create: if isValidId(krathongId) && isValidKrathong(request.resource.data);
+      allow update: if isValidId(krathongId)
+        && isValidKrathong(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
+        && request.resource.data.likes >= resource.data.likes;
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

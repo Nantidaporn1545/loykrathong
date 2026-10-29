@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "krathong": {
+      "title": "Krathong",
+      "description": "Floating Krathong created by an employee with wishes and visual styling",
+      "type": "object",
+      "properties": {
+        "nickname": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "department": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "style": {
+          "type": "string",
+          "enum": ["traditional", "lotus", "golden_lotus", "eco_coconut"]
+        },
+        "color": {
+          "type": "string",
+          "enum": ["gold", "pink", "blue", "purple", "emerald"]
+        },
+        "decorations": {
+          "type": "object"
+        },
+        "wish": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "xPercent": {
+          "type": "number"
+        },
+        "speed": {
+          "type": "number"
+        },
+        "likes": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "nickname",
+        "style",
+        "color",
+        "decorations",
+        "wish",
+        "timestamp",
+        "xPercent",
+        "speed",
+        "likes"
+      ]
+    }
+  },
+  "firestore": {
+    "/krathongs/{krathongId}": {
+      "schema": "krathong",
+      "description": "Collection of all public employee floated krathongs"
+    }
+  }
+}

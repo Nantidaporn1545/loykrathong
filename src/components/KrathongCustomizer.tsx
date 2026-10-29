@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { KrathongStyle, KrathongColor, KrathongDecorations } from '../types';
 import { KrathongGraphic } from './KrathongGraphic';
-import { Sparkles, Wand2, Check, ArrowLeft, RefreshCw, HeartHandshake } from 'lucide-react';
+import { Sparkles, Check, ArrowLeft } from 'lucide-react';
 
 interface KrathongCustomizerProps {
   nickname: string;
-  department: string;
   onBack: () => void;
   onSubmitKrathong: (
     style: KrathongStyle,
@@ -30,16 +29,8 @@ const COLORS: { id: KrathongColor; label: string; hex: string }[] = [
   { id: 'emerald', label: 'เขียวมรกต', hex: '#10B981' },
 ];
 
-const PRESET_WISHES = [
-  'ขอให้สุขภาพแข็งแรง มีความสุข และประสบความสำเร็จในทุกด้าน',
-  'ขอให้ทีมงาน V45 ทุกคนทำงานอย่างมีความสุข เติบโตก้าวหน้าไปด้วยกันอย่างมั่นคง',
-  'ขอขมาพระแม่คงคา และขอให้ชีวิตพบเจอแต่สิ่งดีๆ ไร้โรคภัย ไข้เจ็บ',
-  'ขอให้มีความมั่งคั่ง สมปรารถนา ทั้งเรื่องงาน เรื่องเงิน และครอบครัว',
-];
-
 export const KrathongCustomizer: React.FC<KrathongCustomizerProps> = ({
   nickname,
-  department,
   onBack,
   onSubmitKrathong,
 }) => {
@@ -52,8 +43,7 @@ export const KrathongCustomizer: React.FC<KrathongCustomizerProps> = ({
     lotusPetals: true,
     sparkles: true,
   });
-  const [wish, setWish] = useState(PRESET_WISHES[0]);
-  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [wish, setWish] = useState('');
 
   const maxChars = 300;
   const remainingChars = maxChars - wish.length;
@@ -62,33 +52,13 @@ export const KrathongCustomizer: React.FC<KrathongCustomizerProps> = ({
     setDecorations((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // AI Wish Assistant polisher
-  const handleAiPolishWish = async () => {
-    setIsAiLoading(true);
-    try {
-      const response = await fetch('/api/ai-wish', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wish, nickname, department }),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.polishedWish) {
-          setWish(data.polishedWish.slice(0, 300));
-        }
-      } else {
-        // Fallback polish locally
-        setWish(`ขออำนาจคุณพระศรีรัตนตรัยและพระแม่คงคา จงดลบันดาลให้คุณ${nickname} และครอบครัว ประสบแต่ความสุข ความเจริญ สุขภาพแข็งแรง ไร้ทุกข์โศกโรคภัย และก้าวหน้าในหน้าที่การงาน V45 อย่างยั่งยืน`);
-      }
-    } catch {
-      setWish(`ขออำนาจคุณพระศรีรัตนตรัยและพระแม่คงคา จงดลบันดาลให้คุณ${nickname} และครอบครัว ประสบแต่ความสุข ความเจริญ สุขภาพแข็งแรง ไร้ทุกข์โศกโรคภัย และก้าวหน้าในหน้าที่การงาน V45 อย่างยั่งยืน`);
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
-
   const handleSubmit = () => {
-    onSubmitKrathong(style, color, decorations, wish.trim() || PRESET_WISHES[0]);
+    onSubmitKrathong(
+      style,
+      color,
+      decorations,
+      wish.trim() || 'ขอให้มีความสุข สุขภาพแข็งแรง และประสบความสำเร็จในชีวิต'
+    );
   };
 
   return (
@@ -240,17 +210,6 @@ export const KrathongCustomizer: React.FC<KrathongCustomizerProps> = ({
                 <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 text-xs flex items-center justify-center border border-amber-400/40">4</span>
                 คำอธิษฐานในคืนวันเพ็ญ
               </h3>
-
-              {/* AI Polish Button */}
-              <button
-                type="button"
-                onClick={handleAiPolishWish}
-                disabled={isAiLoading}
-                className="px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-medium flex items-center gap-1.5 shadow-md transition-all disabled:opacity-50"
-              >
-                {isAiLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5 text-amber-300" />}
-                <span>ให้ AI ช่วยเกลาคำอธิษฐาน</span>
-              </button>
             </div>
 
             {/* Textarea */}
@@ -258,7 +217,7 @@ export const KrathongCustomizer: React.FC<KrathongCustomizerProps> = ({
               value={wish}
               onChange={(e) => setWish(e.target.value.slice(0, maxChars))}
               rows={3}
-              placeholder="ขอให้สุขภาพแข็งแรง มีความสุข และประสบความสำเร็จในทุกด้าน"
+              placeholder="กรอกคำอธิษฐานของคุณที่นี่..."
               className="w-full p-3.5 rounded-2xl bg-slate-900/90 border border-amber-500/40 text-amber-50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm leading-relaxed"
             />
 
@@ -268,26 +227,6 @@ export const KrathongCustomizer: React.FC<KrathongCustomizerProps> = ({
               <span className={remainingChars < 20 ? 'text-amber-400 font-bold' : ''}>
                 เหลือ {remainingChars} ตัวอักษร
               </span>
-            </div>
-
-            {/* Quick Wish Presets */}
-            <div className="mt-3">
-              <span className="text-[11px] text-amber-300/70 mb-1.5 block flex items-center gap-1">
-                <HeartHandshake className="w-3 h-3 text-amber-400" />
-                คำอธิษฐานแนะนำ (คลิกเพื่อเลือกใช้งาน):
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {PRESET_WISHES.map((pw, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setWish(pw)}
-                    className="px-2.5 py-1 rounded-lg bg-slate-900/70 hover:bg-amber-500/20 border border-amber-500/20 text-amber-200/80 text-[11px] transition-colors truncate max-w-[260px]"
-                  >
-                    {pw}
-                  </button>
-                ))}
-              </div>
             </div>
           </div>
 

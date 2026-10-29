@@ -303,10 +303,10 @@ export const RiverScene: React.FC<RiverSceneProps> = ({
             V45
           </div>
           <div>
-            <h1 className="font-chakra font-bold text-lg md:text-xl gold-gradient-text leading-none">
-              ลอยกระทงออนไลน์ V45
+            <h1 className="font-chakra font-bold text-sm sm:text-base md:text-lg gold-gradient-text leading-tight">
+              สืบสานวัฒนธรรมไทย ส่งความสุขและคำอธิษฐานจากใจชาว V45
             </h1>
-            <p className="text-[11px] text-amber-200/70">สืบสานประเพณีไทย คืนวันเพ็ญ</p>
+            <p className="text-[11px] text-amber-200/70">ประเพณีลอยกระทง คืนวันเพ็ญ V45</p>
           </div>
         </div>
 

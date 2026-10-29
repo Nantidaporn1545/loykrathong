@@ -27,20 +27,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-between p-4 md:p-8 z-10">
-      {/* Top Corporate Badge */}
-      <div className="w-full max-w-4xl flex justify-between items-center pt-2">
-        <div className="flex items-center gap-2.5 px-4 py-1.5 rounded-full glass-panel border border-amber-500/30">
-          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 flex items-center justify-center font-bold text-[10px] text-slate-950">
-            V45
-          </div>
-          <span className="text-xs text-amber-200/90 font-medium">องค์กร V45 Corporate Events</span>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs text-amber-300/80 font-chakra">
-          <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400" />
-          <span>ลอยกระทงร่วมกัน <strong className="text-amber-300 font-bold">{totalParticipants.toLocaleString()}</strong> คน</span>
-        </div>
-      </div>
+      {/* Top spacer for navbar alignment */}
+      <div className="pt-2" />
 
       {/* Hero Central Content Card */}
       <div className="my-auto w-full max-w-lg glass-panel-gold rounded-3xl p-6 sm:p-8 md:p-10 text-center shadow-2xl relative border border-amber-400/40 pointer-events-auto">
@@ -54,12 +42,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
         {/* Title */}
         <h1 className="font-chakra text-3xl sm:text-4xl md:text-5xl font-extrabold gold-gradient-text tracking-wide mb-3 leading-tight">
-          กิจกรรมลอยกระทงออนไลน์ V45
+          ลอยกระทงออนไลน์ V45
         </h1>
 
         {/* Welcome Subtitle */}
         <p className="text-amber-100/90 font-sarabun text-sm sm:text-base leading-relaxed mb-8">
-          ร่วมสืบสานประเพณีไทย ส่งต่อความสุขและคำอธิษฐานในคืนวันเพ็ญ
+          ร่วมสืบสานวัฒนธรรมไทย ส่งต่อความสุขและคำอธิษฐานจากใจชาว V45
         </p>
 
         {/* Input Form */}
@@ -109,7 +97,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
       {/* Footer copyright */}
       <footer className="text-center py-4 text-xs text-amber-300/50">
-        © 2026 V45 Corporate Events · สืบสานวัฒนธรรมไทยด้วยความภาคภูมิใจ
+        © 2026 V45 · สืบสานวัฒนธรรมไทยด้วยความภาคภูมิใจ
       </footer>
     </div>
   );

@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { AppStep, KrathongData, KrathongStyle, KrathongColor, KrathongDecorations } from './types';
-import { getStoredKrathongs, saveKrathong, getStoredCounter, incrementLike } from './utils/mockData';
+import { INITIAL_KRATHONGS } from './utils/mockData';
+import {
+  subscribeToKrathongs,
+  addKrathongToFirestore,
+  incrementKrathongLikeInFirestore
+} from './utils/firebaseKrathongs';
 import { musicSynth } from './utils/audioSynth';
 
 import { RiverScene } from './components/RiverScene';
@@ -14,9 +19,9 @@ import { MusicControlModal } from './components/MusicControlModal';
 export default function App() {
   const [appStep, setAppStep] = useState<AppStep>('welcome');
   const [nickname, setNickname] = useState('');
-  const [department] = useState('ฝ่ายไอทีและนวัตกรรม V45');
+  const [department] = useState('V45');
 
-  const [krathongs, setKrathongs] = useState<KrathongData[]>([]);
+  const [krathongs, setKrathongs] = useState<KrathongData[]>(INITIAL_KRATHONGS);
   const [myKrathong, setMyKrathong] = useState<KrathongData | null>(null);
   const [counter, setCounter] = useState(1428);
 
@@ -24,17 +29,30 @@ export default function App() {
   const [showGalleryModal, setShowGalleryModal] = useState(false);
   const [showMusicModal, setShowMusicModal] = useState(false);
 
-  // Initialize stored data and music state
+  // Subscribe to real-time central Firestore database for all employees
   useEffect(() => {
-    const list = getStoredKrathongs();
-    setKrathongs(list);
-    setCounter(getStoredCounter());
+    const unsubscribeFirestore = subscribeToKrathongs((realtimeList) => {
+      setKrathongs(realtimeList);
+      setCounter(1428 + realtimeList.length);
+      
+      // Keep myKrathong updated with latest likes if currently active
+      if (myKrathong) {
+        const found = realtimeList.find(k => k.id === myKrathong.id);
+        if (found) {
+          setMyKrathong(found);
+        }
+      }
+    });
 
-    const unsubscribe = musicSynth.subscribe(() => {
+    const unsubscribeMusic = musicSynth.subscribe(() => {
       setMusicPlaying(musicSynth.getIsPlaying());
     });
-    return unsubscribe;
-  }, []);
+
+    return () => {
+      unsubscribeFirestore();
+      unsubscribeMusic();
+    };
+  }, [myKrathong?.id]);
 
   // Handle music toggle
   const handleToggleMusic = () => {
@@ -48,15 +66,15 @@ export default function App() {
     setAppStep('customize');
   };
 
-  // Submit custom Krathong -> Launch Ceremony
-  const handleSubmitKrathong = (
+  // Submit custom Krathong -> Launch Ceremony & Sync to Central Database
+  const handleSubmitKrathong = async (
     style: KrathongStyle,
     color: KrathongColor,
     decorations: KrathongDecorations,
     wish: string
   ) => {
     const newK: KrathongData = {
-      id: `k-user-${Date.now()}`,
+      id: `k-user-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       nickname,
       department,
       style,
@@ -69,15 +87,18 @@ export default function App() {
       likes: 1,
     };
 
-    const updatedList = saveKrathong(newK);
-    setKrathongs(updatedList);
     setMyKrathong(newK);
-    setCounter(prev => prev + 1);
-
-    // Play launch chime audio
+    
+    // Launch ceremony view immediately
     musicSynth.playLaunchChime();
-
     setAppStep('floating');
+
+    // Sync to Firestore central database for all employees to see
+    try {
+      await addKrathongToFirestore(newK);
+    } catch (err) {
+      console.error('Error adding krathong to Firestore:', err);
+    }
   };
 
   // Floating Ceremony finished -> Show Result View
@@ -85,13 +106,20 @@ export default function App() {
     setAppStep('result');
   };
 
-  // Handle Like
+  // Handle Like in central database
   const handleLike = (id: string) => {
-    const updated = incrementLike(id);
-    setKrathongs(updated);
+    // Optimistic local update
+    setKrathongs(prev =>
+      prev.map(k => (k.id === id ? { ...k, likes: (k.likes || 0) + 1 } : k))
+    );
     if (myKrathong && myKrathong.id === id) {
       setMyKrathong(prev => prev ? { ...prev, likes: (prev.likes || 0) + 1 } : null);
     }
+
+    // Update in Firestore
+    incrementKrathongLikeInFirestore(id).catch(err => {
+      console.error('Error incrementing like:', err);
+    });
   };
 
   return (
@@ -127,7 +155,6 @@ export default function App() {
         {appStep === 'customize' && (
           <KrathongCustomizer
             nickname={nickname}
-            department={department}
             onBack={() => setAppStep('welcome')}
             onSubmitKrathong={handleSubmitKrathong}
           />
