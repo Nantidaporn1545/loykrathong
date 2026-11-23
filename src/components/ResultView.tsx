@@ -6,6 +6,7 @@ import { Sparkles, MessageSquare, Eye, RotateCcw, Heart, Users } from 'lucide-re
 interface ResultViewProps {
   krathong: KrathongData;
   allKrathongs?: KrathongData[];
+  likedKrathongIds?: string[];
   onLikeKrathong?: (id: string) => void;
   onOpenWishes: () => void;
   onBackToRiver: () => void;
@@ -15,6 +16,7 @@ interface ResultViewProps {
 export const ResultView: React.FC<ResultViewProps> = ({
   krathong,
   allKrathongs = [],
+  likedKrathongIds = [],
   onLikeKrathong,
   onOpenWishes,
   onBackToRiver,
@@ -260,44 +262,56 @@ export const ResultView: React.FC<ResultViewProps> = ({
 
         {/* Grid List of Colleagues Floating Krathongs & Wishes Revealed */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {otherKrathongs.slice(0, 6).map((item) => (
-            <div
-              key={item.id}
-              className="bg-slate-900/80 p-4 rounded-2xl border border-amber-500/20 hover:border-amber-400/40 transition-all flex items-start gap-3 shadow-md"
-            >
-              <div className="shrink-0 -mt-2">
-                <KrathongGraphic
-                  style={item.style}
-                  color={item.color}
-                  decorations={item.decorations}
-                  size={80}
-                  animateFlame={true}
-                />
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-1 mb-1">
-                  <div className="font-bold text-sm text-amber-200 truncate">{item.nickname}</div>
+          {otherKrathongs.slice(0, 6).map((item) => {
+            const isLiked = likedKrathongIds.includes(item.id);
+            return (
+              <div
+                key={item.id}
+                className="bg-slate-900/80 p-4 rounded-2xl border border-amber-500/20 hover:border-amber-400/40 transition-all flex items-start gap-3 shadow-md"
+              >
+                <div className="shrink-0 -mt-2">
+                  <KrathongGraphic
+                    style={item.style}
+                    color={item.color}
+                    decorations={item.decorations}
+                    size={80}
+                    animateFlame={true}
+                  />
                 </div>
 
-                <p className="text-xs text-amber-100/90 font-sarabun italic leading-relaxed line-clamp-3 mb-2">
-                  "{item.wish}"
-                </p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <div className="font-bold text-sm text-amber-200 truncate">{item.nickname}</div>
+                  </div>
 
-                <div className="flex justify-between items-center text-[11px] text-amber-300/60 pt-1 border-t border-amber-500/10">
-                  <span>{new Date(item.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.</span>
+                  <p className="text-xs text-amber-100/90 font-sarabun italic leading-relaxed line-clamp-3 mb-2">
+                    "{item.wish}"
+                  </p>
 
-                  <button
-                    onClick={() => onLikeKrathong && onLikeKrathong(item.id)}
-                    className="flex items-center gap-1 text-pink-400 hover:text-pink-300 font-bold transition-transform active:scale-95"
-                  >
-                    <Heart className="w-3.5 h-3.5 fill-pink-400" />
-                    <span>{item.likes || 0}</span>
-                  </button>
+                  <div className="flex justify-between items-center text-[11px] text-amber-300/60 pt-1 border-t border-amber-500/10">
+                    <span>{new Date(item.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.</span>
+
+                    <button
+                      type="button"
+                      disabled={isLiked}
+                      onClick={() => {
+                        if (!isLiked && onLikeKrathong) onLikeKrathong(item.id);
+                      }}
+                      className={`flex items-center gap-1 font-bold transition-all ${
+                        isLiked
+                          ? 'text-pink-300/80 cursor-not-allowed'
+                          : 'text-pink-400 hover:text-pink-300 active:scale-95'
+                      }`}
+                      title={isLiked ? 'ส่งกำลังใจแล้ว' : 'ส่งกำลังใจ'}
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-pink-500 text-pink-500' : 'fill-pink-400'}`} />
+                      <span>{isLiked ? `ส่งแล้ว (${item.likes || 0})` : item.likes || 0}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

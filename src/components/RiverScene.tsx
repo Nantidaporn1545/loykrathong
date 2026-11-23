@@ -6,6 +6,7 @@ import { Heart, Sparkles, X, MessageSquare, Volume2, VolumeX, Eye, Music } from 
 interface RiverSceneProps {
   krathongs: KrathongData[];
   activeKrathongId?: string | null;
+  likedKrathongIds?: string[];
   onLikeKrathong?: (id: string) => void;
   musicPlaying?: boolean;
   onToggleMusic?: () => void;
@@ -19,6 +20,7 @@ interface RiverSceneProps {
 export const RiverScene: React.FC<RiverSceneProps> = ({
   krathongs,
   activeKrathongId = null,
+  likedKrathongIds = [],
   onLikeKrathong,
   musicPlaying,
   onToggleMusic,
@@ -31,6 +33,13 @@ export const RiverScene: React.FC<RiverSceneProps> = ({
   const [selectedKrathong, setSelectedKrathong] = useState<KrathongData | null>(null);
   const [driftingKrathongs, setDriftingKrathongs] = useState<KrathongData[]>([]);
   const fireflyCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  const liveSelectedKrathong = selectedKrathong
+    ? krathongs.find((k) => k.id === selectedKrathong.id) || selectedKrathong
+    : null;
+  const isSelectedLiked = liveSelectedKrathong
+    ? likedKrathongIds.includes(liveSelectedKrathong.id)
+    : false;
 
   // Initialize and update drift positions
   useEffect(() => {
@@ -387,7 +396,7 @@ export const RiverScene: React.FC<RiverSceneProps> = ({
       </div>
 
       {/* ----------------- INTERACTIVE KRATHONG INSPECTION MODAL ----------------- */}
-      {selectedKrathong && (
+      {liveSelectedKrathong && (
         <div
           onClick={() => setSelectedKrathong(null)}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn cursor-pointer"
@@ -408,9 +417,9 @@ export const RiverScene: React.FC<RiverSceneProps> = ({
             {/* Krathong Preview */}
             <div className="flex justify-center -mt-2 mb-3">
               <KrathongGraphic
-                style={selectedKrathong.style}
-                color={selectedKrathong.color}
-                decorations={selectedKrathong.decorations}
+                style={liveSelectedKrathong.style}
+                color={liveSelectedKrathong.color}
+                decorations={liveSelectedKrathong.decorations}
                 size={160}
               />
             </div>
@@ -420,29 +429,39 @@ export const RiverScene: React.FC<RiverSceneProps> = ({
               พนักงาน V45
             </div>
             <h3 className="font-chakra font-bold text-xl text-white mb-3">
-              กระทงของคุณ "{selectedKrathong.nickname}"
+              กระทงของคุณ "{liveSelectedKrathong.nickname}"
             </h3>
 
             {/* Wish box */}
             <div className="p-4 rounded-xl bg-slate-900/80 border border-amber-500/20 text-amber-100/90 text-sm italic font-sarabun leading-relaxed mb-5 shadow-inner">
-              "{selectedKrathong.wish}"
+              "{liveSelectedKrathong.wish}"
             </div>
 
             {/* Like & Actions */}
             <div className="flex items-center justify-between gap-3 pt-2 border-t border-amber-500/20 mb-3">
               <span className="text-xs text-amber-200/60">
-                ลอยเมื่อ {new Date(selectedKrathong.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.
+                ลอยเมื่อ {new Date(liveSelectedKrathong.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.
               </span>
 
               <button
+                type="button"
+                disabled={isSelectedLiked}
                 onClick={() => {
-                  if (onLikeKrathong) onLikeKrathong(selectedKrathong.id);
-                  setSelectedKrathong(prev => prev ? { ...prev, likes: (prev.likes || 0) + 1 } : null);
+                  if (isSelectedLiked) return;
+                  if (onLikeKrathong) onLikeKrathong(liveSelectedKrathong.id);
                 }}
-                className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-400 hover:to-rose-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-pink-500/30 transition-transform active:scale-95"
+                className={`px-4 py-2 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${
+                  isSelectedLiked
+                    ? 'bg-pink-500/25 border border-pink-400/50 text-pink-200 cursor-not-allowed opacity-90'
+                    : 'bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-400 hover:to-rose-500 text-white shadow-lg shadow-pink-500/30 active:scale-95'
+                }`}
               >
-                <Heart className="w-4 h-4 fill-white" />
-                ส่งกำลังใจ ({selectedKrathong.likes || 0})
+                <Heart className={`w-4 h-4 ${isSelectedLiked ? 'fill-pink-400 text-pink-400' : 'fill-white'}`} />
+                <span>
+                  {isSelectedLiked
+                    ? `ส่งกำลังใจแล้ว (${liveSelectedKrathong.likes || 0})`
+                    : `ส่งกำลังใจ (${liveSelectedKrathong.likes || 0})`}
+                </span>
               </button>
             </div>
 

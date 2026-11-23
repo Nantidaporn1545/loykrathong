@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AppStep, KrathongData, KrathongStyle, KrathongColor, KrathongDecorations } from './types';
 import { INITIAL_KRATHONGS } from './utils/mockData';
 import {
   subscribeToKrathongs,
   addKrathongToFirestore,
-  incrementKrathongLikeInFirestore
+  incrementKrathongLikeInFirestore,
+  getLikedKrathongIds,
+  saveLikedKrathongId,
+  removeLikedKrathongId
 } from './utils/firebaseKrathongs';
 import { musicSynth } from './utils/audioSynth';
 
@@ -28,6 +31,8 @@ export default function App() {
   const [musicPlaying, setMusicPlaying] = useState(false);
   const [showGalleryModal, setShowGalleryModal] = useState(false);
   const [showMusicModal, setShowMusicModal] = useState(false);
+  const [likedKrathongIds, setLikedKrathongIds] = useState<string[]>(() => getLikedKrathongIds());
+  const inFlightLikesRef = useRef<Set<string>>(new Set());
 
   // Subscribe to real-time central Firestore database for all employees & auto-play music on load
   useEffect(() => {
@@ -108,8 +113,16 @@ export default function App() {
     setAppStep('result');
   };
 
-  // Handle Like in central database
+  // Handle Like in central database (strictly once per krathong)
   const handleLike = (id: string) => {
+    if (likedKrathongIds.includes(id) || inFlightLikesRef.current.has(id)) {
+      return;
+    }
+
+    inFlightLikesRef.current.add(id);
+    const updatedLikedIds = saveLikedKrathongId(id);
+    setLikedKrathongIds(updatedLikedIds);
+
     // Optimistic local update
     setKrathongs(prev =>
       prev.map(k => (k.id === id ? { ...k, likes: (k.likes || 0) + 1 } : k))
@@ -118,10 +131,33 @@ export default function App() {
       setMyKrathong(prev => prev ? { ...prev, likes: (prev.likes || 0) + 1 } : null);
     }
 
-    // Update in Firestore
-    incrementKrathongLikeInFirestore(id).catch(err => {
-      console.error('Error incrementing like:', err);
-    });
+    // Update atomically in Firestore
+    incrementKrathongLikeInFirestore(id)
+      .catch(err => {
+        console.error('Error incrementing like:', err);
+        const msg = err instanceof Error ? err.message : String(err);
+        // If rejected due to duplicate like in another tab (permission-denied), keep marked as liked and roll back optimistic +1
+        if (msg.includes('permission-denied') || msg.includes('Missing or insufficient permissions')) {
+          setKrathongs(prev =>
+            prev.map(k => (k.id === id ? { ...k, likes: Math.max(0, (k.likes || 1) - 1) } : k))
+          );
+          if (myKrathong && myKrathong.id === id) {
+            setMyKrathong(prev => prev ? { ...prev, likes: Math.max(0, (prev.likes || 1) - 1) } : null);
+          }
+        } else {
+          // Transient error: allow retry
+          setLikedKrathongIds(removeLikedKrathongId(id));
+          setKrathongs(prev =>
+            prev.map(k => (k.id === id ? { ...k, likes: Math.max(0, (k.likes || 1) - 1) } : k))
+          );
+          if (myKrathong && myKrathong.id === id) {
+            setMyKrathong(prev => prev ? { ...prev, likes: Math.max(0, (prev.likes || 1) - 1) } : null);
+          }
+        }
+      })
+      .finally(() => {
+        inFlightLikesRef.current.delete(id);
+      });
   };
 
   return (
@@ -131,6 +167,7 @@ export default function App() {
         <RiverScene
           krathongs={krathongs}
           activeKrathongId={myKrathong?.id}
+          likedKrathongIds={likedKrathongIds}
           onLikeKrathong={handleLike}
           musicPlaying={musicPlaying}
           onToggleMusic={handleToggleMusic}
@@ -175,6 +212,7 @@ export default function App() {
           <ResultView
             krathong={myKrathong}
             allKrathongs={krathongs}
+            likedKrathongIds={likedKrathongIds}
             onLikeKrathong={handleLike}
             onOpenWishes={() => setShowGalleryModal(true)}
             onBackToRiver={() => setAppStep('river')}
@@ -224,6 +262,7 @@ export default function App() {
         <div className="relative z-50">
           <WishesGalleryModal
             krathongs={krathongs}
+            likedKrathongIds={likedKrathongIds}
             onClose={() => setShowGalleryModal(false)}
             onLikeKrathong={handleLike}
             onSelectKrathong={(k) => {

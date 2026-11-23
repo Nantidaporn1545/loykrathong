@@ -1,6 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
 
     function isValidId(id) {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
@@ -21,18 +24,34 @@ service cloud.firestore {
         && data.likes is number && data.likes >= 0;
     }
 
+    function isValidKrathongLike(data, voterId) {
+      return data.keys().hasAll(['voterId', 'createdAt'])
+        && data.keys().hasOnly(['voterId', 'createdAt'])
+        && data.voterId is string && data.voterId == voterId && data.voterId.size() > 0 && data.voterId.size() <= 128
+        && data.createdAt is number;
+    }
+
     match /krathongs/{krathongId} {
+      allow read, write: if false;
+    }
+
+    match /krathongs_v2/{krathongId} {
       allow read: if true;
       allow create: if isValidId(krathongId) && isValidKrathong(request.resource.data);
       allow update: if isValidId(krathongId)
         && isValidKrathong(request.resource.data)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
-        && request.resource.data.likes >= resource.data.likes;
+        && request.resource.data.likes == resource.data.likes + 1;
       allow delete: if false;
-    }
 
-    match /{document=**} {
-      allow read, write: if false;
+      match /likes/{voterId} {
+        allow read: if false;
+        allow create: if isValidId(krathongId)
+          && isValidId(voterId)
+          && exists(/databases/$(database)/documents/krathongs_v2/$(krathongId))
+          && isValidKrathongLike(request.resource.data, voterId);
+        allow update, delete: if false;
+      }
     }
   }
 }

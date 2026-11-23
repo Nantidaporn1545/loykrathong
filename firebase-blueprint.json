@@ -52,12 +52,38 @@
         "speed",
         "likes"
       ]
+    },
+    "krathongLike": {
+      "title": "KrathongLike",
+      "description": "Single-like lock record per voterId for a Krathong",
+      "type": "object",
+      "properties": {
+        "voterId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "voterId",
+        "createdAt"
+      ]
     }
   },
   "firestore": {
     "/krathongs/{krathongId}": {
       "schema": "krathong",
-      "description": "Collection of all public employee floated krathongs"
+      "description": "Legacy collection of previous employee floated krathongs"
+    },
+    "/krathongs_v2/{krathongId}": {
+      "schema": "krathong",
+      "description": "Active collection of public employee floated krathongs starting fresh from 0"
+    },
+    "/krathongs_v2/{krathongId}/likes/{voterId}": {
+      "schema": "krathongLike",
+      "description": "Per-voter single-like record preventing duplicate likes on any Krathong"
     }
   }
 }

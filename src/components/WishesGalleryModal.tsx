@@ -5,6 +5,7 @@ import { X, Heart, Search, Sparkles, MessageSquare, LayoutGrid } from 'lucide-re
 
 interface WishesGalleryModalProps {
   krathongs: KrathongData[];
+  likedKrathongIds?: string[];
   onClose: () => void;
   onLikeKrathong: (id: string) => void;
   onSelectKrathong: (krathong: KrathongData) => void;
@@ -12,6 +13,7 @@ interface WishesGalleryModalProps {
 
 export const WishesGalleryModal: React.FC<WishesGalleryModalProps> = ({
   krathongs,
+  likedKrathongIds = [],
   onClose,
   onLikeKrathong,
   onSelectKrathong,
@@ -97,77 +99,98 @@ export const WishesGalleryModal: React.FC<WishesGalleryModalProps> = ({
           ) : activeTab === 'gallery' ? (
             /* Grid View */
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {filtered.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => onSelectKrathong(item)}
-                  className="glass-panel p-4 rounded-2xl border border-amber-500/20 hover:border-amber-400/50 transition-all cursor-pointer group flex flex-col items-center text-center shadow-lg"
-                >
-                  <div className="transform group-hover:scale-105 transition-transform my-2">
-                    <KrathongGraphic
-                      style={item.style}
-                      color={item.color}
-                      decorations={item.decorations}
-                      size={130}
-                    />
-                  </div>
-
-                  <div className="font-bold text-sm text-white">{item.nickname}</div>
-                  <div className="text-xs text-amber-200/70 italic font-sarabun line-clamp-2 my-2">
-                    "{item.wish}"
-                  </div>
-
-                  <div className="mt-auto w-full pt-2 border-t border-amber-500/10 flex justify-between items-center text-[11px] text-amber-300/60">
-                    <span>{new Date(item.timestamp).toLocaleDateString('th-TH')}</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onLikeKrathong(item.id);
-                      }}
-                      className="flex items-center gap-1 text-pink-400 hover:text-pink-300 font-bold"
-                    >
-                      <Heart className="w-3.5 h-3.5 fill-pink-400" />
-                      <span>{item.likes || 0}</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            /* Wishes List View */
-            <div className="space-y-3">
-              {filtered.map((item) => (
-                <div
-                  key={item.id}
-                  className="glass-panel p-4 rounded-2xl border border-amber-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="shrink-0 cursor-pointer" onClick={() => onSelectKrathong(item)}>
+              {filtered.map((item) => {
+                const isLiked = likedKrathongIds.includes(item.id);
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => onSelectKrathong(item)}
+                    className="glass-panel p-4 rounded-2xl border border-amber-500/20 hover:border-amber-400/50 transition-all cursor-pointer group flex flex-col items-center text-center shadow-lg"
+                  >
+                    <div className="transform group-hover:scale-105 transition-transform my-2">
                       <KrathongGraphic
                         style={item.style}
                         color={item.color}
                         decorations={item.decorations}
-                        size={75}
+                        size={130}
                       />
                     </div>
 
-                    <div>
-                      <span className="font-bold text-sm text-amber-200">{item.nickname}</span>
-                      <p className="text-xs text-amber-100/90 font-sarabun italic mt-1 leading-relaxed">
-                        "{item.wish}"
-                      </p>
+                    <div className="font-bold text-sm text-white">{item.nickname}</div>
+                    <div className="text-xs text-amber-200/70 italic font-sarabun line-clamp-2 my-2">
+                      "{item.wish}"
+                    </div>
+
+                    <div className="mt-auto w-full pt-2 border-t border-amber-500/10 flex justify-between items-center text-[11px] text-amber-300/60">
+                      <span>{new Date(item.timestamp).toLocaleDateString('th-TH')}</span>
+                      <button
+                        type="button"
+                        disabled={isLiked}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isLiked) onLikeKrathong(item.id);
+                        }}
+                        className={`flex items-center gap-1 font-bold transition-all ${
+                          isLiked
+                            ? 'text-pink-300/80 cursor-not-allowed'
+                            : 'text-pink-400 hover:text-pink-300 active:scale-95'
+                        }`}
+                        title={isLiked ? 'ส่งกำลังใจแล้ว' : 'ส่งกำลังใจ'}
+                      >
+                        <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-pink-500 text-pink-500' : 'fill-pink-400'}`} />
+                        <span>{isLiked ? `ส่งแล้ว (${item.likes || 0})` : item.likes || 0}</span>
+                      </button>
                     </div>
                   </div>
-
-                  <button
-                    onClick={() => onLikeKrathong(item.id)}
-                    className="px-3 py-1.5 rounded-full bg-pink-500/20 hover:bg-pink-500/30 border border-pink-500/40 text-pink-300 text-xs font-bold flex items-center gap-1.5 shrink-0 self-end sm:self-center transition-colors"
+                );
+              })}
+            </div>
+          ) : (
+            /* Wishes List View */
+            <div className="space-y-3">
+              {filtered.map((item) => {
+                const isLiked = likedKrathongIds.includes(item.id);
+                return (
+                  <div
+                    key={item.id}
+                    className="glass-panel p-4 rounded-2xl border border-amber-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                   >
-                    <Heart className="w-3.5 h-3.5 fill-pink-400" />
-                    <span>{item.likes || 0}</span>
-                  </button>
-                </div>
-              ))}
+                    <div className="flex items-center gap-3">
+                      <div className="shrink-0 cursor-pointer" onClick={() => onSelectKrathong(item)}>
+                        <KrathongGraphic
+                          style={item.style}
+                          color={item.color}
+                          decorations={item.decorations}
+                          size={75}
+                        />
+                      </div>
+
+                      <div>
+                        <span className="font-bold text-sm text-amber-200">{item.nickname}</span>
+                        <p className="text-xs text-amber-100/90 font-sarabun italic mt-1 leading-relaxed">
+                          "{item.wish}"
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={isLiked}
+                      onClick={() => {
+                        if (!isLiked) onLikeKrathong(item.id);
+                      }}
+                      className={`px-3 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 shrink-0 self-end sm:self-center transition-colors ${
+                        isLiked
+                          ? 'bg-pink-500/30 border-pink-400/50 text-pink-200 cursor-not-allowed opacity-90'
+                          : 'bg-pink-500/20 hover:bg-pink-500/30 border-pink-500/40 text-pink-300 active:scale-95'
+                      }`}
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-pink-400 text-pink-400' : 'fill-pink-400'}`} />
+                      <span>{isLiked ? `ส่งแล้ว (${item.likes || 0})` : item.likes || 0}</span>
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { KrathongStyle, KrathongColor, KrathongDecorations } from '../types';
 
 interface KrathongGraphicProps {
@@ -18,6 +18,15 @@ export const KrathongGraphic: React.FC<KrathongGraphicProps> = ({
   className = '',
   animateFlame = true,
 }) => {
+  const rawId = useId();
+  const uid = rawId.replace(/:/g, '');
+  const flameGlowId = `flameGlow-${uid}`;
+  const goldPetalId = `goldPetal-${uid}`;
+  const bananaLeafId = `bananaLeaf-${uid}`;
+  const coconutGradId = `coconutGrad-${uid}`;
+  const accentPetalId = `accentPetal-${uid}`;
+  const glowEffectId = `glowEffect-${uid}`;
+
   // Determine SVG width/height
   let pixelSize = 220;
   if (typeof size === 'number') {
@@ -54,7 +63,7 @@ export const KrathongGraphic: React.FC<KrathongGraphicProps> = ({
       >
         <defs>
           {/* Candle Flame Glow */}
-          <radialGradient id="flameGlow" cx="50%" cy="50%" r="50%">
+          <radialGradient id={flameGlowId} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#FFFBEB" stopOpacity="1" />
             <stop offset="35%" stopColor="#FBBF24" stopOpacity="0.85" />
             <stop offset="70%" stopColor="#F59E0B" stopOpacity="0.4" />
@@ -62,7 +71,7 @@ export const KrathongGraphic: React.FC<KrathongGraphicProps> = ({
           </radialGradient>
 
           {/* Golden Petal Gradient */}
-          <linearGradient id="goldPetal" x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient id={goldPetalId} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#FEF3C7" />
             <stop offset="40%" stopColor="#FBBF24" />
             <stop offset="85%" stopColor="#D97706" />
@@ -70,28 +79,28 @@ export const KrathongGraphic: React.FC<KrathongGraphicProps> = ({
           </linearGradient>
 
           {/* Banana Leaf Gradient */}
-          <linearGradient id="bananaLeaf" x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient id={bananaLeafId} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#4ADE80" />
             <stop offset="50%" stopColor="#16A34A" />
             <stop offset="100%" stopColor="#14532D" />
           </linearGradient>
 
           {/* Coconut Shell Gradient */}
-          <linearGradient id="coconutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={coconutGradId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#78350F" />
             <stop offset="50%" stopColor="#451A03" />
             <stop offset="100%" stopColor="#1C1008" />
           </linearGradient>
 
           {/* Custom Color Petal Gradient */}
-          <linearGradient id="accentPetal" x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient id={accentPetalId} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor={palette.light} />
             <stop offset="50%" stopColor={palette.primary} />
             <stop offset="100%" stopColor={palette.secondary} />
           </linearGradient>
 
           {/* Sparkle filter */}
-          <filter id="glowEffect" x="-50%" y="-50%" width="200%" height="200%">
+          <filter id={glowEffectId} x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="4" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
@@ -103,13 +112,14 @@ export const KrathongGraphic: React.FC<KrathongGraphicProps> = ({
           cy="255"
           rx="120"
           ry="30"
-          fill="rgba(245, 158, 11, 0.15)"
+          fill={palette.glow}
+          opacity="0.25"
           className="animate-pulse"
         />
 
         {/* ----------------- SPARKLE AURA IF ENABLED ----------------- */}
         {decorations.sparkles && (
-          <g filter="url(#glowEffect)">
+          <g filter={`url(#${glowEffectId})`}>
             <circle cx="60" cy="120" r="3" fill="#FDE68A" opacity="0.8" />
             <circle cx="240" cy="110" r="4" fill="#FDE68A" opacity="0.9" />
             <circle cx="80" cy="220" r="2.5" fill="#FDE68A" opacity="0.7" />
@@ -132,7 +142,7 @@ export const KrathongGraphic: React.FC<KrathongGraphicProps> = ({
               <g key={i} transform={`rotate(${deg} 150 210)`}>
                 <path
                   d="M150 145 C130 180 120 225 150 250 C180 225 170 180 150 145 Z"
-                  fill="url(#bananaLeaf)"
+                  fill={`url(#${bananaLeafId})`}
                   stroke="#14532D"
                   strokeWidth="1.5"
                 />
@@ -144,7 +154,7 @@ export const KrathongGraphic: React.FC<KrathongGraphicProps> = ({
               <g key={i} transform={`rotate(${deg} 150 205)`}>
                 <path
                   d="M150 160 C138 185 132 215 150 232 C168 215 162 185 150 160 Z"
-                  fill="url(#accentPetal)"
+                  fill={`url(#${accentPetalId})`}
                   stroke={palette.secondary}
                   strokeWidth="1"
                 />
@@ -166,7 +176,7 @@ export const KrathongGraphic: React.FC<KrathongGraphicProps> = ({
               <g key={i} transform={`rotate(${deg} 150 210)`}>
                 <path
                   d="M150 135 Q120 185 140 250 Q160 250 180 185 Z"
-                  fill="url(#accentPetal)"
+                  fill={`url(#${accentPetalId})`}
                   stroke={palette.secondary}
                   strokeWidth="1"
                 />
@@ -178,7 +188,7 @@ export const KrathongGraphic: React.FC<KrathongGraphicProps> = ({
               <g key={i} transform={`rotate(${deg} 150 208)`}>
                 <path
                   d="M150 150 Q128 190 145 238 Q155 238 172 190 Z"
-                  fill="url(#accentPetal)"
+                  fill={`url(#${accentPetalId})`}
                   opacity="0.9"
                 />
               </g>
@@ -197,13 +207,13 @@ export const KrathongGraphic: React.FC<KrathongGraphicProps> = ({
         {/* STYLE 3: GOLDEN LOTUS (กระทงกลีบบัวสีทอง) */}
         {style === 'golden_lotus' && (
           <g id="golden-lotus-krathong">
-            {/* Outer Royal Golden Petals */}
+            {/* Outer Royal Golden-Trimmed Petals */}
             {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg, i) => (
               <g key={i} transform={`rotate(${deg} 150 210)`}>
                 <path
                   d="M150 125 C115 175 110 230 150 255 C190 230 185 175 150 125 Z"
-                  fill="url(#goldPetal)"
-                  stroke="#B45309"
+                  fill={color === 'gold' ? `url(#${goldPetalId})` : `url(#${accentPetalId})`}
+                  stroke={color === 'gold' ? '#B45309' : '#FBBF24'}
                   strokeWidth="2"
                 />
                 {/* Petal Golden Vein Line */}
@@ -212,7 +222,7 @@ export const KrathongGraphic: React.FC<KrathongGraphicProps> = ({
             ))}
 
             {/* Inner Metallic Gold Rim */}
-            <ellipse cx="150" cy="210" rx="60" ry="30" fill="url(#goldPetal)" stroke="#FBBF24" strokeWidth="2" />
+            <ellipse cx="150" cy="210" rx="60" ry="30" fill={`url(#${goldPetalId})`} stroke="#FBBF24" strokeWidth="2" />
             <ellipse cx="150" cy="210" rx="48" ry="23" fill="#FEF3C7" opacity="0.9" />
           </g>
         )}
@@ -223,13 +233,23 @@ export const KrathongGraphic: React.FC<KrathongGraphicProps> = ({
             {/* Coconut Shell Bowl */}
             <path
               d="M75 190 C75 260 225 260 225 190 Q150 215 75 190 Z"
-              fill="url(#coconutGrad)"
+              fill={`url(#${coconutGradId})`}
               stroke="#B45309"
               strokeWidth="2"
             />
             {/* Floral edge rim */}
             {[80, 105, 130, 155, 180, 205, 220].map((x, i) => (
-              <circle key={i} cx={x} cy={195 + Math.sin(i) * 3} r="9" fill="url(#accentPetal)" />
+              <g key={i}>
+                <circle
+                  cx={x}
+                  cy={195 + Math.sin(i) * 3}
+                  r="9"
+                  fill={`url(#${accentPetalId})`}
+                  stroke={palette.secondary}
+                  strokeWidth="1"
+                />
+                <circle cx={x} cy={195 + Math.sin(i) * 3} r="3" fill={palette.light} />
+              </g>
             ))}
             <ellipse cx="150" cy="195" rx="68" ry="18" fill="#451A03" opacity="0.8" />
           </g>
@@ -240,7 +260,13 @@ export const KrathongGraphic: React.FC<KrathongGraphicProps> = ({
           <g id="decor-petals">
             {[20, 80, 140, 200, 260, 320].map((deg, i) => (
               <g key={i} transform={`rotate(${deg} 150 205)`}>
-                <path d="M150 175 Q140 195 150 210 Q160 195 150 175 Z" fill={palette.light} opacity="0.9" />
+                <path
+                  d="M150 175 Q140 195 150 210 Q160 195 150 175 Z"
+                  fill={palette.light}
+                  stroke={palette.secondary}
+                  strokeWidth="0.7"
+                  opacity="0.9"
+                />
               </g>
             ))}
           </g>
@@ -310,7 +336,7 @@ export const KrathongGraphic: React.FC<KrathongGraphicProps> = ({
               cx="150"
               cy="90"
               r="28"
-              fill="url(#flameGlow)"
+              fill={`url(#${flameGlowId})`}
               className={animateFlame ? 'animate-pulse' : ''}
             />
 
