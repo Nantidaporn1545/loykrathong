@@ -13,6 +13,7 @@ import { KrathongData } from '../types';
 import { INITIAL_KRATHONGS } from './mockData';
 
 const COLLECTION_NAME = 'krathongs_v2';
+const REMOVED_KRATHONG_IDS = new Set<string>(['k-user-1795439855266-351']);
 const VOTER_ID_STORAGE_KEY = 'v45_loy_krathong_voter_id_v2';
 const LIKED_IDS_STORAGE_KEY = 'v45_loy_krathong_liked_ids_v2';
 
@@ -123,6 +124,9 @@ export function subscribeToKrathongs(onUpdate: (krathongs: KrathongData[]) => vo
     (snapshot) => {
       const items: KrathongData[] = [];
       snapshot.forEach((docSnap) => {
+        if (REMOVED_KRATHONG_IDS.has(docSnap.id)) {
+          return;
+        }
         const data = docSnap.data() as KrathongData;
         items.push({
           ...data,
